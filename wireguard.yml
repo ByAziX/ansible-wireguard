@@ -1,0 +1,92 @@
+- name: Configure WireGuard VPN for Public VPS
+  hosts: wireguard
+  become: yes
+  vars:
+    wg_interface: wg0
+    wg_port: 51820
+    private_network: 10.0.0.0/24
+    peers:
+      - { name: "{{ hostvars['master1'].inventory_hostname }}", private_ip: "{{ hostvars['master1'].private_ip }}", public_ip: "{{ hostvars['master1'].public_ip }}" }
+      - { name: "{{ hostvars['master2'].inventory_hostname }}", private_ip: "{{ hostvars['master2'].private_ip }}", public_ip: "{{ hostvars['master2'].public_ip }}" }
+      - { name: "{{ hostvars['master3'].inventory_hostname }}", private_ip: "{{ hostvars['master3'].private_ip }}", public_ip: "{{ hostvars['master3'].public_ip }}" }
+      - { name: "{{ hostvars['worker1'].inventory_hostname }}", private_ip: "{{ hostvars['worker1'].private_ip }}", public_ip: "{{ hostvars['worker1'].public_ip }}" }
+      - { name: "{{ hostvars['worker2'].inventory_hostname }}", private_ip: "{{ hostvars['worker2'].private_ip }}", public_ip: "{{ hostvars['worker2'].public_ip }}" }
+
+  tasks:
+    - name: Ensure WireGuard is installed
+      ansible.builtin.package:
+        name: wireguard-tools
+        state: present
+
+    - name: Ensure WireGuard configuration directory exists
+      file:
+        path: /etc/wireguard
+        state: directory
+        mode: '0700'
+
+    - name: Check if private key exists
+      stat:
+        path: /etc/wireguard/wg0.privatekey
+      register: private_key_file
+
+    - name: Generate WireGuard private key if it doesn't exist
+      shell: wg genkey > /etc/wireguard/wg0.privatekey
+      when: private_key_file.stat.exists == false
+
+    - name: Verify private key file exists
+      stat:
+        path: /etc/wireguard/wg0.privatekey
+      register: verify_private_key
+
+    - name: Ensure private key file exists after generation
+      fail:
+        msg: "Private key file was not created successfully."
+      when: verify_private_key.stat.exists == false
+
+    - name: Generate public key from private key
+      shell: "cat /etc/wireguard/wg0.privatekey | wg pubkey"
+      register: wg_public_key
+      changed_when: false
+
+    - name: Save public key to file
+      copy:
+        content: "{{ wg_public_key.stdout }}"
+        dest: /etc/wireguard/wg0.publickey
+        mode: '0600'
+    
+    - name: Read private key from host
+      slurp:
+        src: /etc/wireguard/wg0.privatekey
+      register: private_key_file
+
+    - name: Decode private key
+      set_fact:
+        private_key: "{{ private_key_file.content | b64decode }}"
+
+    - name: Read public key from host
+      slurp:
+        src: /etc/wireguard/wg0.publickey
+      register: public_key_file
+
+    - name: Decode public key
+      set_fact:
+        public_key: "{{ public_key_file.content | b64decode }}"
+
+    - name: Ensure private and public keys are loaded
+      fail:
+        msg: "Private or public key could not be loaded."
+      when: private_key is not defined or public_key is not defined
+    
+    - name: Generate WireGuard configuration
+      template:
+        src: templates/wg0.conf.j2
+        dest: /etc/wireguard/wg0.conf
+        mode: '0600'
+      notify:
+        - Restart WireGuard
+
+  handlers:
+    - name: Restart WireGuard
+      systemd:
+        name: wg-quick@wg0
+        state: restarted

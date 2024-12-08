@@ -1,0 +1,78 @@
+- name: Reset WireGuard configuration
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Remove WireGuard configuration directory
+      file:
+        path: /etc/wireguard
+        state: absent
+
+    - name: Remove WireGuard private key file
+      file:
+        path: /etc/wireguard/wg0.privatekey
+        state: absent
+
+    - name: Remove WireGuard public key file (if exists)
+      file:
+        path: /etc/wireguard/wg0.pubkey
+        state: absent
+
+    - name: Remove WireGuard configuration file (if exists)
+      file:
+        path: /etc/wireguard/wg0.conf
+        state: absent
+
+    - name: Check if WireGuard service is running
+      command: systemctl is-active wg-quick@wg0
+      register: wg_service_status
+      ignore_errors: yes
+
+    - name: Remove WireGuard service (if exists)
+      systemd:
+        name: wg-quick@wg0
+        state: stopped
+        enabled: no
+      when: wg_service_status.rc == 0
+
+    - name: Disable WireGuard service (if enabled)
+      systemd:
+        name: wg-quick@wg0
+        enabled: no
+        state: stopped
+      when: wg_service_status.rc == 0
+
+    - name: Remove WireGuard package (if installed)
+      package:
+        name: wireguard
+        state: absent
+
+    - name: Remove WireGuard tools (if installed)
+      package:
+        name: wireguard-tools
+        state: absent
+
+    - name: Check if WireGuard kernel module is loaded
+      shell: lsmod | grep -q wireguard
+      register: kernel_module_check
+      ignore_errors: yes
+
+    - name: Remove WireGuard kernel module (if loaded)
+      command: modprobe -r wireguard
+      when: kernel_module_check.rc == 0
+      ignore_errors: yes
+
+    - name: Check if WireGuard network interface exists
+      shell: ip link show wg0
+      register: interface_check
+      ignore_errors: yes
+
+    - name: Remove WireGuard network interface (if exists)
+      command: ip link delete wg0
+      when: interface_check.rc == 0
+      ignore_errors: yes
+
+    - name: Remove WireGuard routing rules (if any)
+      command: ip route del 10.0.0.0/24
+      ignore_errors: yes
+      when: ansible_default_ipv4.routes is defined and '10.0.0.0/24' in ansible_default_ipv4.routes

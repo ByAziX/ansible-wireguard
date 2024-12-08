@@ -1,0 +1,19 @@
+- name: Automatiser l'ajout de clés SSH au fichier known_hosts
+  hosts: wireguard
+  become: no
+  tasks:
+
+    - name: Récupérer la clé publique SSH du serveur
+      ansible.builtin.command:
+        cmd: ssh-keyscan -H {{ ansible_host }}
+      register: ssh_keyscan_output
+      changed_when: false
+
+    - name: Ajouter la clé au fichier known_hosts
+      ansible.builtin.lineinfile:
+        path: "{{ lookup('env', 'HOME') }}/.ssh/known_hosts"
+        line: "{{ ssh_keyscan_output.stdout }}"
+        create: yes
+        mode: '0644'
+      delegate_to: localhost
+      run_once: true
