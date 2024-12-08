@@ -20,7 +20,7 @@ YOUR_SERVER_NAME ansible_host=YOUR_SERVER_IP ansible_user=root private_ip=10.0.0
 
 - Use the following command to automatically add SSH host keys for all servers to your `~/.ssh/known_hosts` file:
 ```bash
-ansible-playbook -i hosts add_known_hosts.yml
+ansible-playbook -i hosts add_known_hosts.yml --ask-pass
 ```
 
 3. **Run the playbook to configure WireGuard**:
