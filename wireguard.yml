@@ -6,11 +6,11 @@
     wg_port: 51820
     private_network: 10.0.0.0/24
     peers:
-      - { name: "{{ hostvars['master1'].inventory_hostname }}", private_ip: "{{ hostvars['master1'].private_ip }}", public_ip: "{{ hostvars['master1'].public_ip }}" }
-      - { name: "{{ hostvars['master2'].inventory_hostname }}", private_ip: "{{ hostvars['master2'].private_ip }}", public_ip: "{{ hostvars['master2'].public_ip }}" }
-      - { name: "{{ hostvars['master3'].inventory_hostname }}", private_ip: "{{ hostvars['master3'].private_ip }}", public_ip: "{{ hostvars['master3'].public_ip }}" }
-      - { name: "{{ hostvars['worker1'].inventory_hostname }}", private_ip: "{{ hostvars['worker1'].private_ip }}", public_ip: "{{ hostvars['worker1'].public_ip }}" }
-      - { name: "{{ hostvars['worker2'].inventory_hostname }}", private_ip: "{{ hostvars['worker2'].private_ip }}", public_ip: "{{ hostvars['worker2'].public_ip }}" }
+      - { name: "{{ hostvars['master1'].inventory_hostname }}", private_ip: "{{ hostvars['master1'].private_ip }}", public_ip: "{{ hostvars['master1'].ansible_host }}" }
+      - { name: "{{ hostvars['master2'].inventory_hostname }}", private_ip: "{{ hostvars['master2'].private_ip }}", public_ip: "{{ hostvars['master2'].ansible_host }}" }
+      - { name: "{{ hostvars['master3'].inventory_hostname }}", private_ip: "{{ hostvars['master3'].private_ip }}", public_ip: "{{ hostvars['master3'].ansible_host }}" }
+      - { name: "{{ hostvars['worker1'].inventory_hostname }}", private_ip: "{{ hostvars['worker1'].private_ip }}", public_ip: "{{ hostvars['worker1'].ansible_host }}" }
+      - { name: "{{ hostvars['worker2'].inventory_hostname }}", private_ip: "{{ hostvars['worker2'].private_ip }}", public_ip: "{{ hostvars['worker2'].ansible_host }}" }
 
   tasks:
     - name: Ensure WireGuard is installed

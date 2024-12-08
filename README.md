@@ -1,4 +1,4 @@
-# README: Ansible Playbook for WireGuard VPN Configuration and Reset
+# Ansible Playbook for WireGuard VPN Configuration and Reset
 
 This README explains how to configure and reset a WireGuard VPN using the provided Ansible playbooks.
 
@@ -12,8 +12,8 @@ This README explains how to configure and reset a WireGuard VPN using the provid
 
 ```ini
 [wireguard]
-master1 ansible_host=YOUR_SERVER_IP ansible_user=root private_ip=10.0.0.1 public_ip=YOUR_SERVER_IP
-worker1 ansible_host=YOUR_SERVER_IP ansible_user=root private_ip=10.0.0.2 public_ip=YOUR_SERVER_IP
+YOUR_SERVER_NAME ansible_host=YOUR_SERVER_IP ansible_user=root private_ip=10.0.0.1
+YOUR_SERVER_NAME ansible_host=YOUR_SERVER_IP ansible_user=root private_ip=10.0.0.2
 ```
 
 2. **Add SSH host keys to `known_hosts`**:
