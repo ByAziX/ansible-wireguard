@@ -11,6 +11,7 @@
       - { name: "{{ hostvars['master3'].inventory_hostname }}", private_ip: "{{ hostvars['master3'].private_ip }}", public_ip: "{{ hostvars['master3'].ansible_host }}" }
       - { name: "{{ hostvars['worker1'].inventory_hostname }}", private_ip: "{{ hostvars['worker1'].private_ip }}", public_ip: "{{ hostvars['worker1'].ansible_host }}" }
       - { name: "{{ hostvars['worker2'].inventory_hostname }}", private_ip: "{{ hostvars['worker2'].private_ip }}", public_ip: "{{ hostvars['worker2'].ansible_host }}" }
+      - { name: "{{ hostvars['managerkub'].inventory_hostname }}", private_ip: "{{ hostvars['managerkub'].private_ip }}", public_ip: "{{ hostvars['managerkub'].ansible_host }}" } 
 
   tasks:
     - name: Ensure WireGuard is installed
@@ -85,8 +86,14 @@
       notify:
         - Restart WireGuard
 
+    - name: Enable WireGuard service for interface
+      systemd:
+        name: wg-quick@{{ wg_interface }}
+        enabled: yes
+        state: started
+
   handlers:
     - name: Restart WireGuard
       systemd:
-        name: wg-quick@wg0
+        name: wg-quick@{{ wg_interface }}
         state: restarted
