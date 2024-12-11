@@ -1,5 +1,5 @@
 [Interface]
-Address = {{ private_ip }}/24
+Address = {{ private_ip }}/32
 ListenPort = {{ wg_port }}
 PrivateKey = {{ private_key }}
 
@@ -8,7 +8,7 @@ PrivateKey = {{ private_key }}
   [Peer]
   PublicKey = {{ hostvars[peer.name].wg_public_key.stdout }}
   Endpoint = {{ peer.public_ip }}:{{ wg_port }}
-  AllowedIPs = {{ peer.private_ip }}/32
+  AllowedIPs = {{ peer.private_ip }}/32, 10.0.0.200/32, 10.0.0.100/32, 10.0.0.80/32, 10.0.0.81/32, 10.0.0.82/32, 10.0.0.83/32, 10.0.0.84/32, 10.0.0.85/32, 10.0.0.86/32, 10.0.0.87/32, 10.0.0.88/32, 10.0.0.89/32, 10.0.0.90/32
   PersistentKeepalive = 25
   {% endif %}
 {% endfor %}
